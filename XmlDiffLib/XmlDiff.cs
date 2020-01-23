@@ -35,6 +35,7 @@ namespace XmlDiffLib
     public bool IgnoreChildOrder { get; set; }
     public bool IgnoreAttributes { get; set; }
     public HashSet<XPathNodeType> IgnoreNodes { get; set; }
+    public HashSet<string> IgnoreXPaths { get; set; }
     public bool IgnoreNamespace { get; set; }
     public bool IgnorePrefix { get; set; }
     public bool TrimWhitespace { get; set; }
@@ -59,6 +60,7 @@ namespace XmlDiffLib
       MatchValueTypes = true;
       TwoWayMatch = false;
       IgnoreNodes = new HashSet<XPathNodeType>();
+      IgnoreXPaths = new HashSet<string>();
       IgnoreTextTypes = new HashSet<IgnoreTextNodeOptions>();
       MaxAttributesToDisplay = -1;
     }
@@ -275,8 +277,11 @@ namespace XmlDiffLib
 
         do
         {
-          if (options.IgnoreNodes.Contains(xFrom.NodeType))
-            continue;
+          if (options.IgnoreNodes.Contains(xFrom.NodeType) ||
+                            options.IgnoreXPaths.Contains(GetXPath(xFrom, false)))
+            {
+                continue;
+            }
 
           XmlDiffNode nodeInfo;
           if (!options.IgnoreChildOrder)
@@ -495,7 +500,7 @@ namespace XmlDiffLib
       return true;
     }
 
-    private string GetXPath(XPathNavigator nav)
+    private string GetXPath(XPathNavigator nav, bool addNodePosition = true)
     {
       Func<XPathNavigator, string> addAttrib =
         (node) =>
@@ -525,7 +530,7 @@ namespace XmlDiffLib
         if (string.IsNullOrEmpty(xNav.LocalName))
           continue;
         string tempLabel = xNav.LocalName + addAttrib(xNav);
-        tempLabel += "[" + GetSiblingPosition(xNav) + "]";
+        if (addNodePosition) { tempLabel += "[" + GetSiblingPosition(xNav) + "]"; }
         tempLabel += "/";
 
         result.Insert(0, tempLabel);
