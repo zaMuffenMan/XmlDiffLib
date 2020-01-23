@@ -37,5 +37,52 @@ namespace XmlDiffLib.Tests
       Assert.AreEqual(diff.DiffNodeList.Count, 2);
       Assert.IsTrue(diff.DiffNodeList[1].Description.Contains("CompanyID"));
     }
+
+    /// <summary>
+    /// GIVEN   an xml structure with a node to be ignored
+    /// WHEN    the xpath is specified that needs to be ignored
+    /// THEN    comparedocument should return true
+    /// </summary>
+    [TestMethod]
+    public void TestXmlIgnoreXPathWithValue()
+    {
+        // Arrange
+        string fromXml = "<Root><Node><SubNode>Foo</SubNode><IgnoreNode>Bar</IgnoreNode></Node><Node><SubNode><Element>Foo</Element></SubNode></Node></Root>";
+        string toXml = "<Root><Node><SubNode>Foo</SubNode></Node><Node><SubNode><Element>Foo</Element></SubNode></Node></Root>";
+
+        XmlDiff xmlDiff = new XmlDiff(fromXml, toXml);
+
+        XmlDiffOptions xmlDiffOptions = new XmlDiffOptions();
+        xmlDiffOptions.IgnoreXPaths.Add("Root/Node/IgnoreNode");
+
+        // Act
+        bool isSame = xmlDiff.CompareDocuments(xmlDiffOptions);
+
+        // Assert
+        Assert.IsTrue(isSame);
+    }
+
+    /// <summary>
+    /// GIVEN   an xml structure with a node missing
+    /// WHEN    no xpath to be ignored is not provided
+    /// THEN    comparedocument should return false
+    /// </summary>
+    [TestMethod]
+    public void TestXmlIgnoreXPathWithoutValue()
+    {
+        // Arrange
+        string fromXml = "<Root><Node><SubNode>Foo</SubNode><IgnoreNode>Bar</IgnoreNode></Node><Node><SubNode><Element>Foo</Element></SubNode></Node></Root>";
+        string toXml = "<Root><Node><SubNode>Foo</SubNode></Node><Node><SubNode><Element>Foo</Element></SubNode></Node></Root>";
+
+        XmlDiff xmlDiff = new XmlDiff(fromXml, toXml);
+
+        XmlDiffOptions xmlDiffOptions = new XmlDiffOptions();
+
+        // Act
+        bool isSame = xmlDiff.CompareDocuments(xmlDiffOptions);
+
+        // Assert
+        Assert.IsFalse(isSame);
+    }
   }
 }
